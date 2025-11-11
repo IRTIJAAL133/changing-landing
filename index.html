@@ -53,40 +53,54 @@
       window.location.href = mobileURL;
     });
 
-    // Google Drive file IDs (replace placeholders with your actual IDs)
-    const googleDriveFileIDs = [
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "14VBEQAdAe5ak17kWdOnvkFcqm_Fnp6tV",
-      "FILE_ID_7",
-      "FILE_ID_8",
-      "FILE_ID_9",
-      "FILE_ID_10",
-      "FILE_ID_11",
-      "FILE_ID_12",
-      "FILE_ID_13",
-      "FILE_ID_14",
-      "FILE_ID_15",
-      "FILE_ID_16",
-      "FILE_ID_17",
-      "FILE_ID_18",
-      "FILE_ID_19",
-      "FILE_ID_20"
-      // Add more file IDs if needed
+    // Imgur images
+    const imgurImages = [
+      "https://i.imgur.com/hmAABJ7.jpg",
+      "https://i.imgur.com/ZYGvd6q.jpg",
+      "https://i.imgur.com/YpxSLD0.jpg",
+      "https://i.imgur.com/JSU3t4x.jpg",
+      "https://i.imgur.com/rMwqoZP.jpg",
+      "https://i.imgur.com/Dpi9Zzv.jpg",
+      "https://i.imgur.com/0kpyxuU.jpg",
+      "https://i.imgur.com/wzYPBDJ.jpg",
+      "https://i.imgur.com/wGi8uyT.jpg",
+      "https://i.imgur.com/tTxAmNF.jpg",
+      "https://i.imgur.com/pSX3j18.jpg",
+      "https://i.imgur.com/jwFUISy.jpg",
+      "https://i.imgur.com/adL2Ou5.jpg",
+      "https://i.imgur.com/lcFOzxz.jpg",
+      "https://i.imgur.com/TrIPXQf.jpg",
+      "https://i.imgur.com/LkW7EgA.jpg"
     ];
 
-    // Shuffle the images
-    const shuffledIDs = googleDriveFileIDs.sort(() => 0.5 - Math.random());
+    // Shuffle the images array
+    const shuffledImages = imgurImages.sort(() => 0.5 - Math.random());
 
-    // Create scrollable sections
-    shuffledIDs.forEach(id => {
+    // How many images will be scrollable (6–7)
+    const scrollableCount = 7;
+
+    // Add scrollable sections
+    for (let i = 0; i < scrollableCount; i++) {
       const section = document.createElement("div");
       section.className = "full-image-section";
-      section.style.backgroundImage = `url('https://drive.google.com/uc?export=view&id=${id}')`;
+      section.style.backgroundImage = `url('${shuffledImages[i]}')`;
       imageContainer.appendChild(section);
+    }
+
+    // Add one last section to trigger auto-redirect
+    const lastSection = document.createElement("div");
+    lastSection.className = "full-image-section";
+    lastSection.style.backgroundImage = `url('${shuffledImages[scrollableCount]}')`;
+    imageContainer.appendChild(lastSection);
+
+    // Detect scroll to bottom for redirect
+    imageContainer.addEventListener("scroll", () => {
+      const scrollBottom = imageContainer.scrollTop + imageContainer.clientHeight;
+      const containerHeight = imageContainer.scrollHeight;
+
+      if (scrollBottom >= containerHeight - 10) {
+        window.location.href = mobileURL;
+      }
     });
   </script>
 </body>
