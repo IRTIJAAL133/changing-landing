@@ -53,43 +53,41 @@
       window.location.href = mobileURL;
     });
 
-    // Uploadcare configuration
-    const publicKey = "7ac3ef25ab4fbe49b85a"; // ✅ your Uploadcare public key
-    const fileGroup = "YOUR_UPLOADCARE_FILE_GROUP"; //⚠️ replace with your actual group ID
+    // Google Drive file IDs (replace placeholders with your actual IDs)
+    const googleDriveFileIDs = [
+      "1_huVSkx2IYF6u-BohdUmJZlyV25eC2-B",
+      "FILE_ID_2",
+      "FILE_ID_3",
+      "FILE_ID_4",
+      "FILE_ID_5",
+      "FILE_ID_6",
+      "FILE_ID_7",
+      "FILE_ID_8",
+      "FILE_ID_9",
+      "FILE_ID_10",
+      "FILE_ID_11",
+      "FILE_ID_12",
+      "FILE_ID_13",
+      "FILE_ID_14",
+      "FILE_ID_15",
+      "FILE_ID_16",
+      "FILE_ID_17",
+      "FILE_ID_18",
+      "FILE_ID_19",
+      "FILE_ID_20"
+      // Add more file IDs if needed
+    ];
 
-    async function loadImages() {
-      try {
-        const res = await fetch(`https://api.uploadcare.com/groups/${fileGroup}/`, {
-          headers: {
-            "Authorization": `Uploadcare.Simple ${publicKey}:`,
-            "Accept": "application/vnd.uploadcare-v0.5+json"
-          }
-        });
+    // Shuffle the images
+    const shuffledIDs = googleDriveFileIDs.sort(() => 0.5 - Math.random());
 
-        const data = await res.json();
-        const images = data.files;
-
-        if (!images || images.length === 0) {
-          console.error("No images found in Uploadcare group.");
-          return;
-        }
-
-        // Shuffle and take 10 random images
-        const selected = images.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-        // Create scrollable sections
-        selected.forEach(img => {
-          const section = document.createElement("div");
-          section.className = "full-image-section";
-          section.style.backgroundImage = `url('https://ucarecdn.com/${img.uuid}/-/preview/')`;
-          imageContainer.appendChild(section);
-        });
-      } catch (err) {
-        console.error("Error loading Uploadcare group:", err);
-      }
-    }
-
-    loadImages();
+    // Create scrollable sections
+    shuffledIDs.forEach(id => {
+      const section = document.createElement("div");
+      section.className = "full-image-section";
+      section.style.backgroundImage = `url('https://drive.google.com/uc?export=view&id=${id}')`;
+      imageContainer.appendChild(section);
+    });
   </script>
 </body>
 </html>
