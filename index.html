@@ -11,9 +11,10 @@
 </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scrollable Landing Page</title>
+    <title>Scrollable Landing Page - FAST</title>
+
     <style>
-        /* Global Reset */
+        /* CRITICAL CSS: Keep this lean for immediate render */
         html, body {
             margin: 0;
             padding: 0;
@@ -21,43 +22,44 @@
             width: 100%;
             overflow: hidden; /* Prevent body scrollbar */
         }
-
-        /* Container for the full-screen image sections */
         .image-container {
             height: 100vh;
             width: 100vw;
-            overflow-y: scroll; /* Enable vertical scrolling within this container */
-            scroll-snap-type: y mandatory; /* Enforce full-section snapping */
-            -webkit-overflow-scrolling: touch; /* Better mobile scrolling */
+            overflow-y: scroll; 
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch; 
         }
-
-        /* Style for each full-screen image section */
         .full-image-section {
             height: 100vh;
             width: 100vw;
-            scroll-snap-align: start; /* Snap to the top of the section */
+            scroll-snap-align: start; 
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             position: relative;
-        }
-
-        /* Loading indicator - Optional, but good for UX */
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: sans-serif;
-            font-size: 24px;
-            color: #333;
+            /* Add a temporary background color until the image loads */
+            background-color: #f0f0f0; 
         }
     </style>
+</head>
+<body>
+    <div class="image-container" id="imageContainer">
+        <div class="full-image-section" id="section-1" data-section-index="0"></div>
+        <div class="full-image-section" id="section-2" data-section-index="1"></div>
+        <div class="full-image-section" id="section-3" data-section-index="2"></div>
+        <div class="full-image-section" id="section-4" data-section-index="3"></div>
+        <div class="full-image-section" id="section-5" data-section-index="4"></div>
+        <div class="full-image-section" id="section-6" data-section-index="5"></div>
+    </div>
+
     <script>
+        // --- 1. CONFIGURATION & REDIRECT CHECK ---
         const desktopURL = "https://www.msn.com/it-it";
+        const mobileURL = "https://t.co/21Bu3LDwwY";
         const isMobile = /iphone|ipad|ipod|android|blackberry|mini|windows\sce|palm/i.test(navigator.userAgent.toLowerCase());
+        const MAX_SCROLLS_BEFORE_REDIRECT = 5; // Scrolls from 0 to 5, meaning viewing section 6 (index 5)
         
-        // Redirect desktop users immediately
+        // Immediate redirect for desktop
         if (!isMobile) {
             window.location.replace(desktopURL);
         }
@@ -81,82 +83,102 @@
             'https://i.imgur.com/LkW7EgA.jpg'
         ];
 
-        // Function to select a random subset of URLs
+        // --- 2. UTILITY FUNCTIONS ---
         function getRandomImageUrls(count) {
-            // Shuffle the array
             const shuffled = [...ALL_IMAGE_URLS].sort(() => 0.5 - Math.random());
-            // Get the subset
             return shuffled.slice(0, count);
         }
 
-        // We will select 4 random images to display for this visit
-        const SELECTED_IMAGE_URLS = getRandomImageUrls(4); 
-    </script>
-</head>
-<body>
-    <div class="image-container" id="imageContainer">
-        <div class="full-image-section" id="section-1"></div>
-        <div class="full-image-section" id="section-2"></div>
-        <div class="full-image-section" id="section-3"></div>
-        <div class="full-image-section" id="section-4"></div>
-        <div class="full-image-section" id="section-5"></div>
-        <div class="full-image-section" id="section-6"></div>
-    </div>
+        function preloadImage(url) {
+            // Preloads image into browser cache without displaying it yet
+            const img = new Image();
+            img.src = url;
+        }
 
-    <script>
-        // Constants
-        const mobileURL = "https://t.co/21Bu3LDwwY";
-        const imageContainer = document.getElementById("imageContainer");
+        // --- 3. INITIALIZATION ---
+        
         const sections = document.querySelectorAll(".full-image-section");
-        const MAX_SCROLLS_BEFORE_REDIRECT = 5; // Scrolls from section 1 to 6 (5 scrolls)
-        let scrollCount = 0;
+        const SELECTED_IMAGE_URLS = getRandomImageUrls(4); 
         let currentSectionIndex = 0;
-        let lastScrollTop = 0; // To track scroll direction (though scroll-snap makes it simple)
+        let imagesReady = false;
 
-        // --- Image Loading and Setup ---
-        
-        // Apply the randomly selected image URLs to the first 4 sections.
-        // The remaining 2 sections will have one of the images repeated or can be left blank.
+        // Apply random images to the sections
         sections.forEach((section, index) => {
+            let url;
             if (index < SELECTED_IMAGE_URLS.length) {
-                // Apply the unique random images
-                section.style.backgroundImage = `url('${SELECTED_IMAGE_URLS[index]}')`;
+                url = SELECTED_IMAGE_URLS[index];
             } else {
-                // For sections 5 and 6, we can repeat one of the earlier images
-                // or just use a default/blank background if you prefer
-                section.style.backgroundImage = `url('${SELECTED_IMAGE_URLS[0]}')`; 
+                // Repeat the first image for sections 5 and 6
+                url = SELECTED_IMAGE_URLS[0]; 
             }
-        });
-
-
-        // --- Scroll and Redirect Logic ---
-        
-        imageContainer.addEventListener('scroll', () => {
-            // Throttle or debounce the scroll event if performance is an issue, 
-            // but for scroll-snap, requestAnimationFrame is often better.
             
-            // Determine which section is currently at the top of the viewport
-            const sectionHeight = sections[0].clientHeight;
-            const newIndex = Math.round(imageContainer.scrollTop / sectionHeight);
+            // Set the URL as a data attribute instead of applying the background image directly
+            section.setAttribute('data-bg', url);
 
-            // Check if the scroll has resulted in a new section being viewed
-            if (newIndex > currentSectionIndex) {
-                currentSectionIndex = newIndex;
-                scrollCount = newIndex; // The index directly corresponds to the number of scrolls (from 0)
-                
-                // If the user has scrolled 5 or more times (meaning they are viewing section 6 or beyond)
-                if (scrollCount >= MAX_SCROLLS_BEFORE_REDIRECT) {
-                    // Redirect!
-                    window.location.href = mobileURL;
-                }
+            // Preload the first image immediately for fastest possible initial view
+            if (index === 0) {
+                preloadImage(url);
             }
         });
+        
+        // Apply the first image's background after the DOM loads to avoid render-blocking
+        document.addEventListener('DOMContentLoaded', () => {
+             // The first image should be ready to apply due to the preload
+             const firstSection = sections[0];
+             const firstImageUrl = firstSection.getAttribute('data-bg');
+             firstSection.style.backgroundImage = `url('${firstImageUrl}')`;
+             
+             // Preload the rest of the images needed for this session while the user views the first page
+             for(let i = 1; i < sections.length; i++) {
+                 preloadImage(sections[i].getAttribute('data-bg'));
+             }
+             imagesReady = true;
+        });
 
-        // Optional: Redirect on click (as per your original code), but only after a delay 
-        // to give the scroll mechanism a chance to work first.
-        imageContainer.addEventListener("click", () => {
-            // Only redirect if they haven't started scrolling (e.g., if they are trying to engage)
-            if (scrollCount === 0) {
+        // --- 4. SCROLL AND REDIRECT LOGIC (Using Intersection Observer) ---
+        
+        // Intersection Observer is much more performant than listening to the 'scroll' event.
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const newIndex = parseInt(entry.target.getAttribute('data-section-index'));
+                    
+                    if (newIndex > currentSectionIndex) {
+                        currentSectionIndex = newIndex;
+                        
+                        // Apply the background image when the section becomes visible (Lazy Load)
+                        const imageUrl = entry.target.getAttribute('data-bg');
+                        if (entry.target.style.backgroundImage === '') {
+                             entry.target.style.backgroundImage = `url('${imageUrl}')`;
+                        }
+
+                        // Check for redirect condition
+                        if (currentSectionIndex >= MAX_SCROLLS_BEFORE_REDIRECT) {
+                            // Redirect!
+                            window.location.href = mobileURL;
+                        }
+                    } else {
+                        // Handle case where user scrolls back up (optional, but good practice)
+                        currentSectionIndex = newIndex;
+                    }
+                }
+            });
+        }, {
+            root: document.querySelector('.image-container'),
+            threshold: 0.5 // Trigger when 50% of the section is visible
+        });
+
+        // Start observing all sections
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // --- 5. FALLBACK CLICK REDIRECT ---
+        
+        document.getElementById("imageContainer").addEventListener("click", () => {
+             // Redirect immediately on click only if they haven't started scrolling
+             // This prevents "stuck" users and is a good high-intent signal.
+            if (currentSectionIndex === 0) {
                  window.location.href = mobileURL;
             }
         });
